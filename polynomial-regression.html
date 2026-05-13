@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polynomial Regression - Numerical Methods</title>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+            background: url('images/2.png') center center / cover no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #ab6d47;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            margin-top: 0;
+            font-size: 2.7rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            color: #7c5c3e;
+            text-align: center;
+        }
+        input, select, textarea {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.5rem;
+            border-radius: 0.7rem;
+            border: 1px solid #e0cfc2;
+            margin-bottom: 0.7rem;
+            font-size: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+        }
+        button {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.8rem;
+            border-radius: 999px;
+            border: none;
+            background: #ffd6b0;
+            color: #ab6d47;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button:hover {
+            background: #ab6d47;
+            color: #fff;
+        }
+        .error {
+            color: #d9534f;
+            margin-bottom: 0.7rem;
+            font-size: 0.98rem;
+            text-align: center;
+        }
+        .output {
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.98rem;
+            color: #ab6d47;
+        }
+        th, td {
+            border: 1px solid #7c5c3e;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            color: #ab6d47;
+        }
+        th {
+            background: #ffe5d0;
+            color: #ab6d47;
+        }
+        main {
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        .back-btn {
+            max-width: 320px;
+            margin-bottom: 1.5rem;
+            background: #e8c4a0;
+            font-size: 0.95rem;
+        }
+        .back-btn:hover {
+            background: #7c5c3e;
+        }
+        .solution-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #ab6d47;
+            border-radius: 0.7rem;
+            padding: 1.2rem;
+            margin: 1rem auto;
+            max-width: 550px;
+            color: #ab6d47;
+            text-align: center;
+        }
+        .solution-box h3 {
+            margin-top: 0;
+            color: #7c5c3e;
+        }
+        .solution-box p {
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        .equation-display {
+            background: #fff8f0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+            font-weight: 700;
+            word-break: break-word;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            input, textarea, select, button {
+                max-width: 95vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <button class="back-btn" onclick="window.location.href='methods-hub.html';">← Back to Methods</button>
+        <h1>Polynomial Regression</h1>
+        
+        <label for="degree">Polynomial Degree:</label>
+        <select id="degree">
+            <option value="1">1 (Linear)</option>
+            <option value="2" selected>2 (Quadratic)</option>
+            <option value="3">3 (Cubic)</option>
+            <option value="4">4 (Quartic)</option>
+            <option value="5">5</option>
+        </select>
+        
+        <label for="dataInput">Enter data (comma or space separated for pairs):<br><span style="font-size:0.8rem;margin-top:0.3rem;">Format: x₁,y₁ x₂,y₂ ... or one pair per line</span></label>
+        <textarea id="dataInput" rows="6" placeholder="Enter X,Y pairs&#10;Example:&#10;1,2&#10;2,5&#10;3,10&#10;4,17"></textarea>
+        
+        <button id="solveBtn">Calculate Polynomial Regression</button>
+        <div class="error" id="error"></div>
+        <div class="output" id="output"></div>
+    </main>
+
+    <script>
+        // Matrix multiplication
+        function matmul(A, B) {
+            const result = [];
+            for (let i = 0; i < A.length; i++) {
+                result[i] = [];
+                for (let j = 0; j < B[0].length; j++) {
+                    let sum = 0;
+                    for (let k = 0; k < B.length; k++) {
+                        sum += A[i][k] * B[k][j];
+                    }
+                    result[i][j] = sum;
+                }
+            }
+            return result;
+        }
+
+        // Gaussian elimination
+        function gaussianElim(A) {
+            const n = A.length;
+            const matrix = A.map(row => [...row]);
+            
+            for (let i = 0; i < n; i++) {
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(matrix[k][i]) > Math.abs(matrix[maxRow][i])) {
+                        maxRow = k;
+                    }
+                }
+                [matrix[i], matrix[maxRow]] = [matrix[maxRow], matrix[i]];
+                
+                if (Math.abs(matrix[i][i]) < 1e-10) {
+                    throw 'Singular matrix';
+                }
+                
+                for (let k = i + 1; k < n; k++) {
+                    const factor = matrix[k][i] / matrix[i][i];
+                    for (let j = i; j <= n; j++) {
+                        matrix[k][j] -= factor * matrix[i][j];
+                    }
+                }
+            }
+            
+            const solution = new Array(n);
+            for (let i = n - 1; i >= 0; i--) {
+                solution[i] = matrix[i][n];
+                for (let j = i + 1; j < n; j++) {
+                    solution[i] -= matrix[i][j] * solution[j];
+                }
+                solution[i] /= matrix[i][i];
+            }
+            
+            return solution;
+        }
+
+        function polynomialRegression(data, degree) {
+            if (data.length < degree + 1) {
+                throw `Need at least ${degree + 1} data points for degree ${degree} polynomial.`;
+            }
+            
+            const n = data.length;
+            const m = degree + 1;
+            
+            // Build the augmented matrix for the normal equations
+            const A = [];
+            for (let i = 0; i < m; i++) {
+                A[i] = [];
+                for (let j = 0; j <= m; j++) {
+                    if (j === m) {
+                        // Right-hand side
+                        let sum = 0;
+                        for (const [x, y] of data) {
+                            sum += y * Math.pow(x, i);
+                        }
+                        A[i][j] = sum;
+                    } else {
+                        // Coefficient matrix
+                        let sum = 0;
+                        for (const [x, y] of data) {
+                            sum += Math.pow(x, i + j);
+                        }
+                        A[i][j] = sum;
+                    }
+                }
+            }
+            
+            // Solve the system
+            const coefficients = gaussianElim(A);
+            
+            // Calculate predictions and R-squared
+            const meanY = data.reduce((a, [x, y]) => a + y, 0) / n;
+            let ssRes = 0, ssTot = 0;
+            const predictions = [];
+            
+            for (const [x, y] of data) {
+                let yPred = 0;
+                for (let i = 0; i < m; i++) {
+                    yPred += coefficients[i] * Math.pow(x, i);
+                }
+                const error = y - yPred;
+                ssRes += error * error;
+                ssTot += (y - meanY) * (y - meanY);
+                
+                predictions.push({
+                    x,
+                    y,
+                    yPred,
+                    error
+                });
+            }
+            
+            const rSquared = 1 - (ssRes / ssTot);
+            
+            // Build equation string
+            let equation = '';
+            for (let i = m - 1; i >= 0; i--) {
+                if (i === 0) {
+                    equation += `${coefficients[i].toFixed(6)}`;
+                } else if (i === 1) {
+                    const coef = coefficients[i].toFixed(6);
+                    equation += (coefficients[i] >= 0 && equation ? '+' : '') + coef + 'x';
+                } else {
+                    const coef = coefficients[i].toFixed(6);
+                    equation += (coefficients[i] >= 0 && equation ? '+' : '') + coef + `x^${i}`;
+                }
+            }
+            
+            return {
+                coefficients,
+                degree,
+                rSquared,
+                predictions,
+                equation
+            };
+        }
+
+        function parseData(input) {
+            const data = [];
+            const lines = input.trim().split(/[\n\s]+/).filter(l => l);
+            
+            for (const line of lines) {
+                let parts;
+                if (line.includes(',')) {
+                    parts = line.split(',');
+                } else {
+                    parts = line.split(/[\s,]+/);
+                }
+                
+                if (parts.length >= 2) {
+                    const x = parseFloat(parts[0]);
+                    const y = parseFloat(parts[1]);
+                    if (!isNaN(x) && !isNaN(y)) {
+                        data.push([x, y]);
+                    }
+                }
+            }
+            
+            return data;
+        }
+
+        document.getElementById('solveBtn').addEventListener('click', function() {
+            const errorDiv = document.getElementById('error');
+            const outputDiv = document.getElementById('output');
+            errorDiv.textContent = '';
+            outputDiv.innerHTML = '';
+            
+            try {
+                const degree = parseInt(document.getElementById('degree').value);
+                const input = document.getElementById('dataInput').value.trim();
+                
+                if (!input) {
+                    errorDiv.textContent = 'Please enter data points.';
+                    return;
+                }
+                
+                const data = parseData(input);
+                if (data.length < degree + 1) {
+                    errorDiv.textContent = `Need at least ${degree + 1} data points for degree ${degree} polynomial.`;
+                    return;
+                }
+                
+                const result = polynomialRegression(data, degree);
+                
+                let html = '<div class="solution-box">';
+                html += '<h3>Regression Results</h3>';
+                html += `<div class="equation-display">y = ${result.equation}</div>`;
+                html += `<p><strong>R² (Coefficient of Determination):</strong> ${result.rSquared.toFixed(8)}</p>`;
+                html += '</div>';
+                
+                // Create table with predictions
+                html += '<table><tr><th>X</th><th>Y (Actual)</th><th>Y (Predicted)</th><th>Error</th></tr>';
+                for (const pred of result.predictions) {
+                    html += `<tr>
+                        <td>${pred.x.toFixed(6)}</td>
+                        <td>${pred.y.toFixed(6)}</td>
+                        <td>${pred.yPred.toFixed(6)}</td>
+                        <td>${pred.error.toFixed(6)}</td>
+                    </tr>`;
+                }
+                html += '</table>';
+                
+                outputDiv.innerHTML = html;
+            } catch (err) {
+                errorDiv.textContent = 'Error: ' + err;
+            }
+        });
+    </script>
+</body>
+</html>

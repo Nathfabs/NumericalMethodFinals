@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerical Methods</title>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+            background: url('images/2.png') center center / cover no-repeat;
+            background-attachment: fixed;
+            min-height: 100vh;
+            min-width: 100vw;
+            padding: 2.5rem 1rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #ab6d47;
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.7rem;
+        }
+        
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .method-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 1rem;
+            padding: 2rem 1.5rem;
+            box-shadow: 0 4px 15px rgba(171, 109, 71, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .method-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(171, 109, 71, 0.35);
+        }
+        
+        .method-card h2 {
+            color: #ab6d47;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+        }
+        
+        .method-card p {
+            color: #7c5c3e;
+            font-size: 0.95rem;
+            line-height: 1.4;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+        
+        .card-button {
+            background: #ffd6b0;
+            color: #ab6d47;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+            font-family: 'DynaPuff', cursive;
+        }
+        
+        .card-button:hover {
+            background: #ab6d47;
+            color: #fff;
+        }
+        
+        .category {
+            margin-bottom: 3rem;
+        }
+        
+        .category-title {
+            color: #ab6d47;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            padding: 0 1rem;
+        }
+        
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+                margin-bottom: 2rem;
+            }
+            
+            .category-title {
+                font-size: 1.3rem;
+            }
+            
+            .methods-grid,
+            .category-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                padding: 0;
+            }
+            
+            .method-card {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Numerical Methods Solver</h1>
+        
+        <!-- Root-Finding Methods -->
+        <div class="category">
+            <div class="category-title">Root-Finding Methods</div>
+            <div class="category-grid">
+                <a href="homepage.html" class="method-card">
+                    <h2>Bisection Method</h2>
+                    <p>Find roots using interval bisection. Always converges but is slower.</p>
+                    <button class="card-button">Open</button>
+                </a>
+                
+                <a href="homepage.html" class="method-card">
+                    <h2>False Position</h2>
+                    <p>Regula falsi method for faster root finding. Often faster than bisection.</p>
+                    <button class="card-button">Open</button>
+                </a>
+                
+                <a href="homepage.html" class="method-card">
+                    <h2>Secant Method</h2>
+                    <p>Approximation method using secant lines. Faster convergence.</p>
+                    <button class="card-button">Open</button>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Linear Systems Methods -->
+        <div class="category">
+            <div class="category-title">Linear Systems Methods</div>
+            <div class="category-grid">
+                <a href="gauss-elimination.html" class="method-card">
+                    <h2>Gauss Elimination</h2>
+                    <p>Solve systems of linear equations using Gaussian elimination.</p>
+                    <button class="card-button">Open</button>
+                </a>
+                
+                <a href="gauss-seidel.html" class="method-card">
+                    <h2>Gauss-Seidel Method</h2>
+                    <p>Iterative method for solving linear systems with fast convergence.</p>
+                    <button class="card-button">Open</button>
+                </a>
+                
+                <a href="gauss-jacobi.html" class="method-card">
+                    <h2>Gauss-Jacobi Method</h2>
+                    <p>Iterative approach for linear systems using parallel computations.</p>
+                    <button class="card-button">Open</button>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Regression Methods -->
+        <div class="category">
+            <div class="category-title">Regression Methods</div>
+            <div class="category-grid">
+                <a href="linear-regression.html" class="method-card">
+                    <h2>Linear Regression</h2>
+                    <p>Fit a best-fit line to your data using least squares method.</p>
+                    <button class="card-button">Open</button>
+                </a>
+                
+                <a href="polynomial-regression.html" class="method-card">
+                    <h2>Polynomial Regression</h2>
+                    <p>Fit polynomial curves to data using least squares method.</p>
+                    <button class="card-button">Open</button>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

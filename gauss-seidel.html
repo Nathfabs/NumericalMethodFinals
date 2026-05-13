@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gauss-Seidel Method - Numerical Methods</title>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+            background: url('images/2.png') center center / cover no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #ab6d47;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            margin-top: 0;
+            font-size: 2.7rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            color: #7c5c3e;
+            text-align: center;
+        }
+        input, select {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.5rem;
+            border-radius: 0.7rem;
+            border: 1px solid #e0cfc2;
+            margin-bottom: 0.7rem;
+            font-size: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.8rem;
+            border-radius: 999px;
+            border: none;
+            background: #ffd6b0;
+            color: #ab6d47;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button:hover {
+            background: #ab6d47;
+            color: #fff;
+        }
+        .error {
+            color: #d9534f;
+            margin-bottom: 0.7rem;
+            font-size: 0.98rem;
+            text-align: center;
+        }
+        .output {
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.98rem;
+            color: #ab6d47;
+        }
+        th, td {
+            border: 1px solid #7c5c3e;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            color: #ab6d47;
+        }
+        th {
+            background: #ffe5d0;
+            color: #ab6d47;
+        }
+        main {
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        .back-btn {
+            max-width: 320px;
+            margin-bottom: 1.5rem;
+            background: #e8c4a0;
+            font-size: 0.95rem;
+        }
+        .back-btn:hover {
+            background: #7c5c3e;
+        }
+        .matrix-input {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .matrix-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .matrix-cell {
+            width: 60px;
+            padding: 0.4rem !important;
+            margin: 0 !important;
+            font-size: 0.9rem;
+        }
+        .matrix-const {
+            width: 70px;
+            background: #fff8f0;
+            font-weight: 700;
+        }
+        .solution-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #ab6d47;
+            border-radius: 0.7rem;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 500px;
+            color: #ab6d47;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .matrix-cell {
+                width: 50px;
+                font-size: 0.8rem;
+            }
+            input, select, button {
+                max-width: 95vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <button class="back-btn" onclick="window.location.href='methods-hub.html';">← Back to Methods</button>
+        <h1>Gauss-Seidel Method</h1>
+        
+        <label for="numEq">Number of Equations/Variables:</label>
+        <select id="numEq">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+        </select>
+        
+        <div id="matrixContainer"></div>
+        
+        <label for="tol" style="margin-top: 1.5rem;">Tolerance (error):</label>
+        <input type="number" id="tol" step="any" value="0.0001">
+        
+        <label for="maxIter">Max Iterations:</label>
+        <input type="number" id="maxIter" value="100">
+        
+        <button id="solveBtn" style="display:none;">Solve</button>
+        <div class="error" id="error"></div>
+        <div class="output" id="output"></div>
+    </main>
+
+    <script>
+        let currentN = 3;
+
+        function generateMatrixInput(n) {
+            currentN = n;
+            const container = document.getElementById('matrixContainer');
+            let html = '<div class="matrix-input">';
+            
+            html += '<p style="color:#7c5c3e;margin:0.5rem 0;">Enter coefficients and constants (| is the constant column):</p>';
+            
+            for (let i = 0; i < n; i++) {
+                html += '<div class="matrix-row">';
+                for (let j = 0; j < n; j++) {
+                    html += `<input type="number" class="matrix-cell" id="a${i}${j}" placeholder="a${i+1}${j+1}" step="any">`;
+                }
+                html += `<span style="margin: 0 0.3rem; color:#ab6d47;">|</span>`;
+                html += `<input type="number" class="matrix-cell matrix-const" id="b${i}" placeholder="b${i+1}" step="any">`;
+                html += '</div>';
+            }
+            
+            html += '</div><div class="matrix-input"><p style="color:#7c5c3e;margin:0.5rem 0;">Initial guess values:</p>';
+            
+            for (let i = 0; i < n; i++) {
+                html += `<label for="x${i}" style="margin-top:0.3rem;">Initial x${i===0?'₀':(i===1?'₁':'₍'+i+'₎')} :</label><input type="number" id="x${i}" step="any" value="0">`;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('solveBtn').style.display = 'block';
+        }
+
+        document.getElementById('numEq').addEventListener('change', function() {
+            generateMatrixInput(parseInt(this.value));
+            document.getElementById('error').textContent = '';
+            document.getElementById('output').innerHTML = '';
+        });
+
+        function gaussSeidel(A, b, x0, tol, maxIter) {
+            const n = A.length;
+            let x = [...x0];
+            const iterations = [];
+            
+            for (let iter = 0; iter < maxIter; iter++) {
+                const xOld = [...x];
+                let maxError = 0;
+                
+                for (let i = 0; i < n; i++) {
+                    let sum = b[i];
+                    for (let j = 0; j < n; j++) {
+                        if (i !== j) {
+                            sum -= A[i][j] * x[j];
+                        }
+                    }
+                    if (Math.abs(A[i][i]) < 1e-10) {
+                        throw 'Diagonal element is zero. Matrix may not be suitable for Gauss-Seidel.';
+                    }
+                    x[i] = sum / A[i][i];
+                    const error = Math.abs(x[i] - xOld[i]);
+                    maxError = Math.max(maxError, error);
+                }
+                
+                iterations.push({
+                    iter: iter + 1,
+                    values: [...x],
+                    error: maxError
+                });
+                
+                if (maxError < tol) {
+                    break;
+                }
+            }
+            
+            return { solution: x, iterations };
+        }
+
+        document.getElementById('solveBtn').addEventListener('click', function() {
+            const n = currentN;
+            const errorDiv = document.getElementById('error');
+            const outputDiv = document.getElementById('output');
+            errorDiv.textContent = '';
+            outputDiv.innerHTML = '';
+            
+            try {
+                const tol = parseFloat(document.getElementById('tol').value);
+                const maxIter = parseInt(document.getElementById('maxIter').value);
+                
+                if (isNaN(tol) || tol <= 0) {
+                    errorDiv.textContent = 'Tolerance must be a positive number.';
+                    return;
+                }
+                if (isNaN(maxIter) || maxIter < 1) {
+                    errorDiv.textContent = 'Max iterations must be at least 1.';
+                    return;
+                }
+                
+                // Read matrix
+                const A = [];
+                const b = [];
+                for (let i = 0; i < n; i++) {
+                    const row = [];
+                    for (let j = 0; j < n; j++) {
+                        const val = parseFloat(document.getElementById(`a${i}${j}`).value);
+                        if (isNaN(val)) {
+                            errorDiv.textContent = `Please enter a valid number at position (${i+1},${j+1}).`;
+                            return;
+                        }
+                        row.push(val);
+                    }
+                    const bVal = parseFloat(document.getElementById(`b${i}`).value);
+                    if (isNaN(bVal)) {
+                        errorDiv.textContent = `Please enter a valid constant at b${i+1}.`;
+                        return;
+                    }
+                    A.push(row);
+                    b.push(bVal);
+                }
+                
+                // Read initial guesses
+                const x0 = [];
+                for (let i = 0; i < n; i++) {
+                    const val = parseFloat(document.getElementById(`x${i}`).value);
+                    if (isNaN(val)) {
+                        errorDiv.textContent = `Please enter a valid initial value for x${i}.`;
+                        return;
+                    }
+                    x0.push(val);
+                }
+                
+                const result = gaussSeidel(A, b, x0, tol, maxIter);
+                
+                // Create variable names
+                const varNames = [];
+                for (let i = 0; i < n; i++) {
+                    varNames.push(String.fromCharCode(120 + i)); // x, y, z, ...
+                }
+                
+                let html = '<div class="solution-box"><h3>Final Solution</h3>';
+                for (let i = 0; i < n; i++) {
+                    html += `<p><strong>${varNames[i]} = ${result.solution[i].toFixed(8)}</strong></p>`;
+                }
+                html += `<p><strong>Total Iterations: ${result.iterations.length}</strong></p></div>`;
+                
+                // Create iteration table
+                html += '<table><tr><th>Iter</th>';
+                for (let i = 0; i < n; i++) {
+                    html += `<th>${varNames[i]}</th>`;
+                }
+                html += '<th>Max Error</th></tr>';
+                
+                for (const iter of result.iterations) {
+                    html += `<tr><td>${iter.iter}</td>`;
+                    for (let i = 0; i < n; i++) {
+                        html += `<td>${iter.values[i].toFixed(6)}</td>`;
+                    }
+                    html += `<td>${iter.error.toExponential(3)}</td></tr>`;
+                }
+                html += '</table>';
+                
+                outputDiv.innerHTML = html;
+            } catch (err) {
+                errorDiv.textContent = 'Error: ' + err;
+            }
+        });
+
+        // Initialize
+        generateMatrixInput(3);
+    </script>
+</body>
+</html>

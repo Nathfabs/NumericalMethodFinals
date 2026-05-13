@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gauss Elimination - Numerical Methods</title>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+            background: url('images/2.png') center center / cover no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        h1 {
+            color: #ab6d47;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            margin-top: 0;
+            font-size: 2.7rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            color: #7c5c3e;
+            text-align: center;
+        }
+        input, select {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.5rem;
+            border-radius: 0.7rem;
+            border: 1px solid #e0cfc2;
+            margin-bottom: 0.7rem;
+            font-size: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.8rem;
+            border-radius: 999px;
+            border: none;
+            background: #ffd6b0;
+            color: #ab6d47;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button:hover {
+            background: #ab6d47;
+            color: #fff;
+        }
+        .error {
+            color: #d9534f;
+            margin-bottom: 0.7rem;
+            font-size: 0.98rem;
+            text-align: center;
+        }
+        .output {
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.98rem;
+            color: #ab6d47;
+        }
+        th, td {
+            border: 1px solid #7c5c3e;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            color: #ab6d47;
+        }
+        th {
+            background: #ffe5d0;
+            color: #ab6d47;
+        }
+        main {
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding-top: 2.5rem;
+            padding-bottom: 2.5rem;
+        }
+        .back-btn {
+            max-width: 320px;
+            margin-bottom: 1.5rem;
+            background: #e8c4a0;
+            font-size: 0.95rem;
+        }
+        .back-btn:hover {
+            background: #7c5c3e;
+        }
+        .matrix-input {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        .matrix-row {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .matrix-cell {
+            width: 60px;
+            padding: 0.4rem !important;
+            margin: 0 !important;
+            font-size: 0.9rem;
+        }
+        .matrix-const {
+            width: 70px;
+            background: #fff8f0;
+            font-weight: 700;
+        }
+        .solution-box {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid #ab6d47;
+            border-radius: 0.7rem;
+            padding: 1rem;
+            margin: 1rem auto;
+            max-width: 500px;
+            color: #ab6d47;
+            text-align: center;
+        }
+        .solution-box h3 {
+            margin-top: 0;
+            color: #7c5c3e;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            .matrix-cell {
+                width: 50px;
+                font-size: 0.8rem;
+            }
+            input, select, button {
+                max-width: 95vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <button class="back-btn" onclick="window.location.href='methods-hub.html';">← Back to Methods</button>
+        <h1>Gauss Elimination</h1>
+        
+        <label for="numEq">Number of Equations/Variables:</label>
+        <select id="numEq">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        
+        <div id="matrixContainer"></div>
+        
+        <button id="solveBtn">Solve</button>
+        <div class="error" id="error"></div>
+        <div class="output" id="output"></div>
+    </main>
+
+    <script>
+        let currentN = 3;
+
+        function generateMatrixInput(n) {
+            currentN = n;
+            const container = document.getElementById('matrixContainer');
+            let html = '<div class="matrix-input">';
+            
+            html += '<p style="color:#7c5c3e;margin:0.5rem 0;">Enter coefficients and constants (| is the constant column):</p>';
+            
+            for (let i = 0; i < n; i++) {
+                html += '<div class="matrix-row">';
+                for (let j = 0; j < n; j++) {
+                    html += `<input type="number" class="matrix-cell" id="a${i}${j}" placeholder="a${i+1}${j+1}" step="any">`;
+                }
+                html += `<span style="margin: 0 0.3rem; color:#ab6d47;">|</span>`;
+                html += `<input type="number" class="matrix-cell matrix-const" id="b${i}" placeholder="b${i+1}" step="any">`;
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+            document.getElementById('solveBtn').style.display = 'block';
+        }
+
+        document.getElementById('numEq').addEventListener('change', function() {
+            generateMatrixInput(parseInt(this.value));
+            document.getElementById('error').textContent = '';
+            document.getElementById('output').innerHTML = '';
+        });
+
+        function gaussElimination(matrix, n) {
+            // Create augmented matrix
+            const A = matrix.map(row => [...row]);
+            const steps = [];
+            
+            // Forward elimination
+            for (let i = 0; i < n; i++) {
+                // Find pivot
+                let maxRow = i;
+                for (let k = i + 1; k < n; k++) {
+                    if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) {
+                        maxRow = k;
+                    }
+                }
+                
+                // Swap rows
+                if (maxRow !== i) {
+                    [A[i], A[maxRow]] = [A[maxRow], A[i]];
+                    steps.push(`Swapped row ${i+1} with row ${maxRow+1}`);
+                }
+                
+                // Check for zero pivot
+                if (Math.abs(A[i][i]) < 1e-10) {
+                    throw 'Matrix is singular (no unique solution).';
+                }
+                
+                // Make all rows below this one 0 in current column
+                for (let k = i + 1; k < n; k++) {
+                    const factor = A[k][i] / A[i][i];
+                    for (let j = i; j <= n; j++) {
+                        A[k][j] -= factor * A[i][j];
+                    }
+                    steps.push(`R${k+1} = R${k+1} - (${factor.toFixed(4)}) * R${i+1}`);
+                }
+            }
+            
+            // Back substitution
+            const solution = new Array(n);
+            for (let i = n - 1; i >= 0; i--) {
+                solution[i] = A[i][n];
+                for (let j = i + 1; j < n; j++) {
+                    solution[i] -= A[i][j] * solution[j];
+                }
+                solution[i] /= A[i][i];
+            }
+            
+            return { solution, steps, finalMatrix: A };
+        }
+
+        document.getElementById('solveBtn').addEventListener('click', function() {
+            const n = currentN;
+            const errorDiv = document.getElementById('error');
+            const outputDiv = document.getElementById('output');
+            errorDiv.textContent = '';
+            outputDiv.innerHTML = '';
+            
+            // Read matrix from inputs
+            const matrix = [];
+            for (let i = 0; i < n; i++) {
+                const row = [];
+                for (let j = 0; j < n; j++) {
+                    const val = parseFloat(document.getElementById(`a${i}${j}`).value);
+                    if (isNaN(val)) {
+                        errorDiv.textContent = `Please enter a valid number at position (${i+1},${j+1}).`;
+                        return;
+                    }
+                    row.push(val);
+                }
+                const b = parseFloat(document.getElementById(`b${i}`).value);
+                if (isNaN(b)) {
+                    errorDiv.textContent = `Please enter a valid constant value at b${i+1}.`;
+                    return;
+                }
+                row.push(b);
+                matrix.push(row);
+            }
+            
+            try {
+                const result = gaussElimination(matrix, n);
+                
+                // Create variable names
+                const varNames = [];
+                for (let i = 0; i < n; i++) {
+                    varNames.push(String.fromCharCode(120 + i)); // x, y, z, ...
+                }
+                
+                let html = '<div class="solution-box"><h3>Solution</h3>';
+                for (let i = 0; i < n; i++) {
+                    html += `<p><strong>${varNames[i]} = ${result.solution[i].toFixed(8)}</strong></p>`;
+                }
+                html += '</div>';
+                
+                // Show final upper triangular matrix
+                html += '<table><tr><th colspan="' + (n+1) + '">Final Upper Triangular Matrix</th></tr><tr>';
+                for (let j = 0; j <= n; j++) {
+                    html += (j === n) ? '<th>|</th>' : '<th>Col ' + (j+1) + '</th>';
+                }
+                html += '</tr>';
+                
+                for (let i = 0; i < n; i++) {
+                    html += '<tr>';
+                    for (let j = 0; j <= n; j++) {
+                        html += `<td>${result.finalMatrix[i][j].toFixed(6)}</td>`;
+                    }
+                    html += '</tr>';
+                }
+                html += '</table>';
+                
+                outputDiv.innerHTML = html;
+            } catch (err) {
+                errorDiv.textContent = 'Error: ' + err;
+            }
+        });
+
+        // Initialize
+        generateMatrixInput(3);
+    </script>
+</body>
+</html>

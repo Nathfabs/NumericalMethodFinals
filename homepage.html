@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numerical Methods Program</title>
+    <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+            background: url('images/2.png') center center / cover no-repeat;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            min-width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .back-btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.8rem;
+            border-radius: 999px;
+            border: none;
+            background: #e8c4a0;
+            color: #ab6d47;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            transition: background 0.2s, color 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            font-family: 'DynaPuff', cursive, Arial, sans-serif;
+        }
+        .back-btn:hover {
+            background: #7c5c3e;
+            color: #fff;
+        }
+        h1 {
+            color: #ab6d47;
+            text-align: center;
+            margin-bottom: 1.2rem;
+            margin-top: 0;
+            font-size: 2.7rem;
+        }
+        label {
+            display: block;
+            margin-top: 1rem;
+            margin-bottom: 0.3rem;
+            color: #7c5c3e;
+            text-align: center;
+        }
+        input, select {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.5rem;
+            border-radius: 0.7rem;
+            border: 1px solid #e0cfc2;
+            margin-bottom: 0.7rem;
+            font-size: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button {
+            width: 100%;
+            max-width: 320px;
+            padding: 0.8rem;
+            border-radius: 999px;
+            border: none;
+            background: #ffd6b0;
+            color: #ab6d47;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: background 0.2s, color 0.2s;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        button:hover {
+            background: #ab6d47;
+            color: #fff;
+        }
+        .error {
+            color: #d9534f;
+            margin-bottom: 0.7rem;
+            font-size: 0.98rem;
+        }
+        .output {
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            font-size: 0.98rem;
+            color: #ab6d47;
+        }
+        th, td {
+            border: 1px solid #7c5c3e;
+            padding: 0.8rem 0.5rem;
+            text-align: center;
+            color: #ab6d47;
+        }
+        th {
+            background: #ffe5d0;
+            color: #ab6d47;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 1rem 0.3rem;
+                max-width: 98vw;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main style="width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:2.5rem;padding-bottom:2.5rem;">
+        <button class="back-btn" onclick="window.location.href='methods-hub.html';">← Back to Methods</button>
+        <h1 style="color:#ab6d47;">Numerical Methods Program</h1>
+        <label for="equation">Enter Equation f(x):</label>
+        <input type="text" id="equation" placeholder="e.g. x^3 - x - 2" style="max-width:320px;">
+        <label for="method">Choose Method:</label>
+        <select id="method">
+            <option value="bisection">Bisection Method</option>
+            <option value="false-position">False Position Method</option>
+            <option value="secant">Secant Method</option>
+        </select>
+        <div id="inputs">
+            <!-- Dynamic input fields will appear here -->
+        </div>
+        <button id="solveBtn">Solve</button>
+        <div class="error" id="error"></div>
+        <div class="output" id="output"></div>
+    </main>
+    <script>
+
+        // Parse and evaluate user equation safely
+        function fFactory(equationStr) {
+            // Replace ^ with ** for exponentiation
+            let expr = equationStr.replace(/\^/g, '**');
+            // Allow only numbers, x, math functions, operators, and parentheses
+            // Supported: + - * / ^ ( ) x Math. functions
+            // Replace common math functions with Math. prefix
+            expr = expr.replace(/(sin|cos|tan|log|exp|sqrt|abs|asin|acos|atan)/g, 'Math.$1');
+            // Only allow valid characters
+            if (!/^[-+*/().x0-9 Mathabsincostanlogexpsqrt]*$/.test(expr)) {
+                throw 'Invalid characters in equation.';
+            }
+            // Return a function of x
+            return new Function('x', 'return ' + expr + ';');
+        }
+
+        // Helper to create input fields dynamically
+        function renderInputs(method) {
+            const inputsDiv = document.getElementById('inputs');
+            let html = '';
+            if (method === 'bisection' || method === 'false-position') {
+                html += `<label for="a">Interval a:</label><input type="number" id="a" step="any">`;
+                html += `<label for="b">Interval b:</label><input type="number" id="b" step="any">`;
+            } else if (method === 'secant') {
+                html += `<label for="x0">Initial guess x₀:</label><input type="number" id="x0" step="any">`;
+                html += `<label for="x1">Initial guess x₁:</label><input type="number" id="x1" step="any">`;
+            }
+            html += `<label for="tol">Tolerance (error):</label><input type="number" id="tol" step="any" value="0.0001">`;
+            html += `<label for="maxIter">Max Iterations:</label><input type="number" id="maxIter" value="50">`;
+            inputsDiv.innerHTML = html;
+        }
+
+        // Initial render
+        renderInputs('bisection');
+        document.getElementById('method').addEventListener('change', function() {
+            renderInputs(this.value);
+            document.getElementById('error').textContent = '';
+            document.getElementById('output').innerHTML = '';
+        });
+
+        // Main solve button handler
+        document.getElementById('solveBtn').onclick = function() {
+            const method = document.getElementById('method').value;
+            const errorDiv = document.getElementById('error');
+            const outputDiv = document.getElementById('output');
+            errorDiv.textContent = '';
+            outputDiv.innerHTML = '';
+
+            // Get equation
+            const eqStr = document.getElementById('equation').value.trim();
+            if (!eqStr) {
+                errorDiv.textContent = 'Please enter an equation for f(x).';
+                return;
+            }
+            let f;
+            try {
+                f = fFactory(eqStr);
+            } catch (err) {
+                errorDiv.textContent = 'Invalid equation: ' + err;
+                return;
+            }
+
+            // Get inputs
+            let a, b, x0, x1, tol, maxIter;
+            try {
+                tol = parseFloat(document.getElementById('tol').value);
+                maxIter = parseInt(document.getElementById('maxIter').value);
+                if (isNaN(tol) || tol <= 0) throw 'Tolerance must be positive.';
+                if (isNaN(maxIter) || maxIter < 1) throw 'Max iterations must be at least 1.';
+                if (method === 'bisection' || method === 'false-position') {
+                    a = parseFloat(document.getElementById('a').value);
+                    b = parseFloat(document.getElementById('b').value);
+                    if (isNaN(a) || isNaN(b)) throw 'Please enter valid numbers for a and b.';
+                    if (a >= b) throw 'a must be less than b.';
+                } else if (method === 'secant') {
+                    x0 = parseFloat(document.getElementById('x0').value);
+                    x1 = parseFloat(document.getElementById('x1').value);
+                    if (isNaN(x0) || isNaN(x1)) throw 'Please enter valid numbers for x₀ and x₁.';
+                    if (x0 === x1) throw 'x₀ and x₁ must be different.';
+                }
+            } catch (err) {
+                errorDiv.textContent = err;
+                return;
+            }
+
+            // Call the appropriate method
+            if (method === 'bisection') {
+                bisectionMethod(a, b, tol, maxIter, outputDiv, errorDiv, f);
+            } else if (method === 'false-position') {
+                falsePositionMethod(a, b, tol, maxIter, outputDiv, errorDiv, f);
+            } else if (method === 'secant') {
+                secantMethod(x0, x1, tol, maxIter, outputDiv, errorDiv, f);
+            }
+        };
+
+        // Bisection Method
+        function bisectionMethod(a, b, tol, maxIter, outputDiv, errorDiv, f) {
+            // This method always converges, but is slow (reliable)
+            let fa = f(a), fb = f(b);
+            if (fa * fb > 0) {
+                errorDiv.textContent = 'f(a) and f(b) must have opposite signs.';
+                return;
+            }
+            let table = `<table><tr><th>Iter</th><th>a</th><th>b</th><th>c</th><th>f(c)</th><th>Error</th></tr>`;
+            let c, fc, prevC = a, err = Infinity, iter = 0;
+            while (err > tol && iter < maxIter) {
+                c = (a + b) / 2;
+                fc = f(c);
+                err = Math.abs(c - prevC);
+                table += `<tr><td>${iter+1}</td><td>${a.toFixed(6)}</td><td>${b.toFixed(6)}</td><td>${c.toFixed(6)}</td><td>${fc.toExponential(3)}</td><td>${err.toExponential(3)}</td></tr>`;
+                if (fa * fc < 0) {
+                    b = c; fb = fc;
+                } else {
+                    a = c; fa = fc;
+                }
+                prevC = c;
+                iter++;
+            }
+            table += '</table>';
+            outputDiv.innerHTML = `<span style='color:#ab6d47;'><b>Final root approximation:</b> ${c.toFixed(8)}<br><b>Total iterations:</b> ${iter}</span>` + table + `<div style="margin-top:0.7rem;font-size:0.97rem;color:#7c5c3e;">Bisection always converges, but is slow (reliable).</div>`;
+        }
+
+        // False Position Method (Regula Falsi)
+        function falsePositionMethod(a, b, tol, maxIter, outputDiv, errorDiv, f) {
+            // Faster than bisection in many cases, but can be slow if one endpoint does not change
+            let fa = f(a), fb = f(b);
+            if (fa * fb > 0) {
+                errorDiv.textContent = 'f(a) and f(b) must have opposite signs.';
+                return;
+            }
+            let table = `<table><tr><th>Iter</th><th>a</th><th>b</th><th>c</th><th>f(c)</th><th>Error</th></tr>`;
+            let c, fc, prevC = a, err = Infinity, iter = 0;
+            while (err > tol && iter < maxIter) {
+                c = (a*fb - b*fa) / (fb - fa);
+                fc = f(c);
+                err = Math.abs(c - prevC);
+                table += `<tr><td>${iter+1}</td><td>${a.toFixed(6)}</td><td>${b.toFixed(6)}</td><td>${c.toFixed(6)}</td><td>${fc.toExponential(3)}</td><td>${err.toExponential(3)}</td></tr>`;
+                if (fa * fc < 0) {
+                    b = c; fb = fc;
+                } else {
+                    a = c; fa = fc;
+                }
+                prevC = c;
+                iter++;
+            }
+            table += '</table>';
+            outputDiv.innerHTML = `<span style='color:#ab6d47;'><b>Final root approximation:</b> ${c.toFixed(8)}<br><b>Total iterations:</b> ${iter}</span>` + table + `<div style="margin-top:0.7rem;font-size:0.97rem;color:#7c5c3e;">False Position is often faster than bisection, but can be slow if one endpoint does not change.</div>`;
+        }
+
+        // Secant Method
+        function secantMethod(x0, x1, tol, maxIter, outputDiv, errorDiv, f) {
+            // Faster convergence, but not always guaranteed
+            let table = `<table><tr><th>Iter</th><th>x₀</th><th>x₁</th><th>x₂</th><th>f(x₂)</th><th>Error</th></tr>`;
+            let iter = 0, err = Infinity, x2, fx0 = f(x0), fx1 = f(x1);
+            while (err > tol && iter < maxIter) {
+                if (fx1 - fx0 === 0) {
+                    errorDiv.textContent = 'Division by zero encountered in Secant method.';
+                    return;
+                }
+                x2 = x1 - fx1 * (x1 - x0) / (fx1 - fx0);
+                let fx2 = f(x2);
+                err = Math.abs(x2 - x1);
+                table += `<tr><td>${iter+1}</td><td>${x0.toFixed(6)}</td><td>${x1.toFixed(6)}</td><td>${x2.toFixed(6)}</td><td>${fx2.toExponential(3)}</td><td>${err.toExponential(3)}</td></tr>`;
+                x0 = x1; fx0 = fx1;
+                x1 = x2; fx1 = fx2;
+                iter++;
+            }
+            table += '</table>';
+            outputDiv.innerHTML = `<span style='color:#ab6d47;'><b>Final root approximation:</b> ${x2.toFixed(8)}<br><b>Total iterations:</b> ${iter}</span>` + table + `<div style="margin-top:0.7rem;font-size:0.97rem;color:#7c5c3e;">Secant method is faster, but convergence is not guaranteed.</div>`;
+        }
+    </script>
+</body>
+</html>

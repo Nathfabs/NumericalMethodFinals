@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Numerical Methods Root-Finding Calculator</title>
+	<!-- Google Fonts for friendly typography -->
+	<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;700&family=DynaPuff:wght@400;700&display=swap" rel="stylesheet">
+	<style>
+		:root {
+			/* Soft pastel color palette */
+			--peach: #ffe5d0;
+			--cream: #fffaf3;
+			--brown: #b08968;
+			--peach-dark: #ffd6b0;
+			--white: #fff;
+			--shadow: 0 4px 24px 0 rgba(176,137,104,0.08);
+		}
+
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			min-height: 100vh;
+			min-width: 100vw;
+			/* Background image with pastel overlay using a pseudo-element */
+			background: url("images/landingpage.png") center center / cover no-repeat;
+			position: relative;
+			overflow: hidden;
+		}
+
+
+		.center-content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			min-height: 100vh;
+			width: 100vw;
+			position: relative;
+			z-index: 1;
+		}
+			font-family: 'Quicksand', Arial, sans-serif;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			flex-direction: column;
+			transition: background 0.5s;
+		}
+
+
+		h1 {
+			color: var(--brown);
+			font-size: 2.1rem;
+			font-weight: 700;
+			margin: 0 0 0.7rem 0;
+			text-align: center;
+			letter-spacing: 0.01em;
+		}
+
+		.subtitle {
+			color: #a68a6d;
+			font-size: 1.05rem;
+			margin-bottom: 2.2rem;
+			text-align: center;
+			font-weight: 400;
+		}
+
+		.main-title {
+			font-family: 'DynaPuff', cursive !important;
+			color: #ab6d47 !important;
+			font-size: 3.5rem !important;
+		}
+		.start-btn {
+			background: var(--peach-dark);
+			color: var(--brown);
+			border: 2px solid var(--brown);
+			border-radius: 999px;
+			padding: 0.85rem 2.5rem;
+			font-size: 1.15rem;
+			font-weight: 700;
+			cursor: pointer;
+			box-shadow: 0 2px 12px 0 rgba(176,137,104,0.07);
+			transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+			outline: none;
+			font-family: 'DynaPuff', cursive;
+		}
+		.start-btn:hover, .start-btn:focus {
+			background: var(--brown);
+			color: var(--white);
+			transform: scale(1.04);
+			box-shadow: 0 4px 24px 0 rgba(176,137,104,0.13);
+		}
+
+		/* Responsive design */
+		@media (max-width: 600px) {
+			.container {
+				padding: 1.5rem 0.7rem 2rem 0.7rem;
+				max-width: 98vw;
+			}
+			h1 {
+				font-size: 1.3rem;
+			}
+			.subtitle {
+				font-size: 0.98rem;
+			}
+			.start-btn {
+				font-size: 1rem;
+				padding: 0.7rem 1.5rem;
+			}
+		}
+	</style>
+</head>
+	<body>
+		<div class="center-content">
+			<!-- Main Title -->
+			<h1 class="main-title">Numerical Methods Root-Finding Calculator</h1>
+			<!-- Start Button -->
+			<button class="start-btn" id="startBtn">Start</button>
+		</div>
+
+		<!-- JavaScript for button navigation -->
+		<script>
+			// On click, navigate to the methods hub
+			document.getElementById('startBtn').addEventListener('click', function() {
+				// Go to methods-hub.html when Start is clicked
+				window.location.href = 'methods-hub.html';
+			});
+		</script>
+	</body>
+</html>
